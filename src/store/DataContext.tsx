@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useReducer } from "r
 import { Action, DataContextType, Post, Comment, State, Result } from "../interfaces/Interfaces";
 
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 
 const initialState: State = {
