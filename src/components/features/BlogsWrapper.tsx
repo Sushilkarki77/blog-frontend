@@ -11,8 +11,13 @@ const BlogsWrapper: React.FC = () => {
     const { state, fetchPosts, exportPosts } = useDataContext();
     const [, clearStorage] = useAtom(clearStorageAtom);
 
+    
+
     const navigate = useNavigate();
+
+
     const navigateToAdd = () => navigate(`/add-post`);
+
 
     if (state.loading) return <Loading />;
     if (state.error) return <p>Error: {state.error}</p>;

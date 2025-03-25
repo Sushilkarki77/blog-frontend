@@ -1,8 +1,8 @@
-import { createContext, ReactNode, useContext, useReducer } from "react";
+import { createContext, ReactNode, useCallback, useContext, useReducer } from "react";
 import { Action, DataContextType, Post, Comment, State, Result } from "../interfaces/Interfaces";
 
 
-const API_URL = 'https://blog-backend-lbii.onrender.com';
+const API_URL = 'http://localhost:3000';
 
 
 const initialState: State = {
@@ -61,7 +61,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const fetchPosts = async (page = "1") => {
+    const fetchPosts = useCallback(async (page = "1") => {
         dispatch({ type: "FETCH_POSTS" });
         try {
             const response = await fetch(`${API_URL}/posts?page=${page}`);
@@ -76,9 +76,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             dispatch({ type: "FETCH_ERROR", payload: (error as Error).message });
         }
-    };
+    }, []);
 
-    const searchPosts = async (q = "") => {
+    const searchPosts = useCallback(async (q = "") => {
         dispatch({ type: "SEARCH_POSTS" });
         try {
             const response = await fetch(`${API_URL}/posts/search?q=${q}`);
@@ -94,7 +94,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             dispatch({ type: "FETCH_ERROR", payload: (error as Error).message });
         }
-    };
+    }, []);
 
     const filterPosts = (tag = '', author = '') => {
         const filteredPosts = state.posts.result.filter(x => {
@@ -183,7 +183,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-    const fetchComments = async (postId: string) => {
+    const fetchComments = useCallback(async (postId: string) => {
 
         try {
             const commentsResponse = await fetch(`${API_URL}/posts/${postId}/comments`);
@@ -200,9 +200,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
                 payload: (error as Error).message,
             });
         }
-    };
+    }, []);
 
-    const addComment = async (postId: string, comment: Omit<Comment, 'id'>) => {
+    const addComment = useCallback(async (postId: string, comment: Omit<Comment, 'id'>) => {
         try {
             const comments: Comment[] = [...state.comments, { ...comment, id: Math.random().toString() }]
             dispatch({ type: "ADD_COMMENT", payload: comments });
@@ -218,9 +218,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             dispatch({ type: "FETCH_ERROR", payload: (error as Error).message });
         }
-    };
+    }, [state.comments]);
 
-    const deleteComment = async (postId: string, commentId: string) => {
+    const deleteComment = useCallback(async (postId: string, commentId: string) => {
         try {
 
             const comments: Comment[] = state.comments.filter(x => x.id != commentId);
@@ -232,7 +232,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             dispatch({ type: "FETCH_ERROR", payload: (error as Error).message });
         }
-    };
+    }, [state.comments]);
 
     const setIsFilterApplied = (val: boolean) => {
         dispatch({ type: "SET_ISFILTER_APPLIED", payload: val })
@@ -246,9 +246,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const getCurrentPost = (postId: string): Post | undefined => {
+    const getCurrentPost = useCallback((postId: string): Post | undefined => {
         return state.posts.result.find(x => x.id === postId)
-    };
+    }, [state.posts])
 
 
     return (
@@ -258,7 +258,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useDataContext = (): DataContextType => {
     const context = useContext(DataContext);
     if (!context) {
